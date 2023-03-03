@@ -11,3 +11,5 @@ As code, materials list and build instructions become available they will be sha
 Real-time data will be shared when online and links will be provided.
 
 Ngā mihi nui
+
+I am making my first commit
