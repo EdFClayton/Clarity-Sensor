@@ -81,7 +81,7 @@ char* NodeID_1 = "NIWA_a"; char* NodeID_2 = "NIWA_b"; char* NodeID_3 = "NIWA_c";
 float Path_A = 0.0214; float Path_B = 0.0416; float Path_C = 0.0626; float Path_D = 0.0816  ;   
 
 // time interval in minutes between readings (default 5).
-int T = 5; 
+int T = 30; 
 
 // increase the power of the LoRa radio if there are transmission problems, 
 // maximum value 23 and default is 13. NOTE: THIS WILL CONSUME MORE POWER!!
@@ -481,7 +481,7 @@ void loop() {
   reportDisplay();
   // sendData();
   clearArrays();  
-  // sleepytime(); 
+  sleepytime(); 
 }
 
 //___________________________________________________________________________________________
