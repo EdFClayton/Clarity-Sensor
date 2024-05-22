@@ -16,7 +16,7 @@ Version     Comment
 ------------------------------------------------------------------------------------
 V0.1DRAFT   Micro: Adafruit Feather M0 RFM95 LoRA with stacked Adalogger FeatherWing
             Ambient Sensors: VEML3235SL
-            LEDs:
+            LEDs: TLCPG5100
             Temperature sensor: TMP1075DGKR
             Barometric sensor: MS587302BA01-50
             Water pressure sensor: MPRLS0025PA00001A
@@ -53,6 +53,7 @@ ________________________________________________________________________________
 #include <TCA9548.h>
 #include <Temperature_LM75_Derived.h>
 #include <Adafruit_MPRLS.h>
+#include <ms5837.h>
 
 //============================================================================================
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -71,17 +72,17 @@ const int numReadings = 5;
 
 // rename this to anything you want the Adafruit to be called (i.e. location where it will be deployed), 
 // this will be stored on the SD card in the log file.
-String LoggerName = "Clarity Sensor NIWA_TEST";
+String LoggerName = "Clarity Sensor RENAME";
 
 // site identifiers for telemetry, should reflect logger name. Need three to transmit all data. 
 // NO SPACES!
-char* NodeID_1 = "NIWA_a"; char* NodeID_2 = "NIWA_b"; char* NodeID_3 = "NIWA_c";  
+char* NodeID_1 = "RENAME_a"; char* NodeID_2 = "RENAME_b"; char* NodeID_3 = "RENAME_c";  
 
 // lengths of paths in meters to 0.2mm (use digital calipers to confirm path lengths).
 float Path_A = 0.0214; float Path_B = 0.0416; float Path_C = 0.0626; float Path_D = 0.0816  ;   
 
 // time interval in minutes between readings (default 5).
-int T = 30; 
+int T = 10; 
 
 // increase the power of the LoRa radio if there are transmission problems, 
 // maximum value 23 and default is 13. NOTE: THIS WILL CONSUME MORE POWER!!
@@ -116,7 +117,7 @@ Generic_LM75 readTemp;
 // MPRLS pressure sensor declaration "waterPressure"                            
 Adafruit_MPRLS waterPressure = Adafruit_MPRLS(); 
 // Barometric pressure sensor declaration     
-// baroPressure
+static ms5837 baroPressure; 
 // wd load driver instance of the radio and called it "rf95"
 RH_RF95 rf95(RFM95_CS, RFM95_INT);      
 
@@ -446,9 +447,10 @@ void setup()
     }  
   Serial.println("ALS sensor D found");
   delay(1000);
-    Serial.println(F(""));
-    Serial.println("SETUP COMPLETE");
-    delay(1000);  
+  Serial.println(F(""));
+  baroPressure.begin();
+  Serial.println("SETUP COMPLETE");
+  delay(1000);
 }
 
 //___________________________________________________________________________________________
@@ -909,7 +911,8 @@ void calibration() {
       Serial.println(F("Path A calibrated"));
       Serial.print(F("12m clarity PWM full strength value = ")); Serial.print(bright_A); Serial.print(F(", ALS count = ")); Serial.println(AA);
       Serial.print(F("12m clarity PWM half strength value = ")); Serial.print(bright_a); Serial.print(F(", ALS count = ")); Serial.println(aA);
-      Serial.print(F("Calibration factor = ")); Serial.print(diff_A); Serial.print(F(". Half PWM / Full PWM = ")); Serial.println(half_A); 
+      Serial.print(F("Calibration factor = ")); Serial.print(diff_A); Serial.print(F(". Half PWM / Full PWM = "));
+      float showA = half_A*0.001; Serial.print(showA,3); Serial.println(" (0.500 is perfect score)"); 
     } else if (N == 2) {    // move to next path
       bright_B = R;
       bright_b = r;
@@ -920,7 +923,8 @@ void calibration() {
       Serial.println(F("Path B calibrated"));
       Serial.print(F("12m clarity PWM full strength value = ")); Serial.print(bright_B); Serial.print(F(", ALS count = ")); Serial.println(BB);
       Serial.print(F("12m clarity PWM half strength value = ")); Serial.print(bright_b); Serial.print(F(", ALS count = ")); Serial.println(bB);
-      Serial.print(F("Calibration factor = ")); Serial.print(diff_B); Serial.print(F(". Half PWM / Full PWM = ")); Serial.println(half_B);         
+      Serial.print(F("Calibration factor = ")); Serial.print(diff_B); Serial.print(F(". Half PWM / Full PWM = ")); 
+      float showB = half_B*0.001; Serial.print(showB,3); Serial.println(" (0.500 is perfect score)");       
     } else if (N == 3) {
       bright_C = R;
       bright_c = r;
@@ -931,7 +935,8 @@ void calibration() {
       Serial.println(F("Path C calibrated"));
       Serial.print(F("12m clarity PWM full strength value = ")); Serial.print(bright_C); Serial.print(F(", ALS count = ")); Serial.println(CC);
       Serial.print(F("12m clarity PWM half strength value = ")); Serial.print(bright_c); Serial.print(F(", ALS count = ")); Serial.println(cC);
-      Serial.print(F("Calibration factor = ")); Serial.print(diff_C); Serial.print(F(". Half PWM / Full PWM = ")); Serial.println(half_C);         
+      Serial.print(F("Calibration factor = ")); Serial.print(diff_C); Serial.print(F(". Half PWM / Full PWM = ")); 
+      float showC = half_C*0.001; Serial.print(showC,3); Serial.println(" (0.500 is perfect score)");         
     } else if (N == 4) {
       bright_D = R;
       bright_d = r;
@@ -942,8 +947,9 @@ void calibration() {
       Serial.println(F("Path D calibrated"));
       Serial.print(F("12m clarity PWM full strength value = ")); Serial.print(bright_D); Serial.print(F(", ALS count = ")); Serial.println(DD);
       Serial.print(F("12m clarity PWM half strength value = ")); Serial.print(bright_d); Serial.print(F(", ALS count = ")); Serial.println(dD);
-      Serial.print(F("Calibration factor = ")); Serial.print(diff_D); Serial.print(F(". Half PWM / Full PWM = ")); Serial.println(half_D);       
-    } Serial.println(); 
+      Serial.print(F("Calibration factor = ")); Serial.print(diff_D); Serial.print(F(". Half PWM / Full PWM = ")); 
+      float showD = half_D*0.001; Serial.print(showD,3); Serial.println(" (0.500 is perfect score)");       
+    } Serial.println();  
   }  
   temperature(); endTemp = sensorTemp;    // read temperature again and record as endTemp
   File CalData = SD.open("calData.csv", FILE_WRITE);    // add cal data as new line (append)
@@ -1083,16 +1089,18 @@ void pressure() {
   sensorHPA = waterPressure.readPressure();
   Serial.print("\nSensorPressure = "); Serial.print(sensorHPA); Serial.println(" hectopascals");
   //read barometric pressure and display on screen
-
+  float dont_use_temperature; float baroHPA;
+  ms5837_status baroStatus = baroPressure.read_temperature_and_pressure(&dont_use_temperature, &baroHPA);
+  Serial.print("Barometric Pressure = "); Serial.print(baroHPA); Serial.println(" hectopascals");
   // get water level by subtracting barometric pressure from sensor pressure and converting to meters
-  // mH20 = sensorHPA - baroHPA;
-  // mH20 *= 0.01019;
+  mH20 = sensorHPA - baroHPA;
+  mH20 *= 0.01019;
   // display water level on screen
-  // Serial.println("Water level = "); Serial.print(mH20); Serial.println(" meters");
+  Serial.print("Water level = "); Serial.print(mH20); Serial.println(" meters");
   Serial.println("\n-----------------");
   // store water level in mm for sendData() as it needs to be an integer
-  // float convertH20 = mH20*1000;
-  // mm_H20 = (int)convertH20;
+  float convertH20 = mH20*1000;
+  mm_H20 = (int)convertH20;
 }
 
 //____________________________________________________________________________________________
