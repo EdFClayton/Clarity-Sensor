@@ -5,7 +5,7 @@ This is the draft code for a water clarity sensor developed by E Clayton for a U
 
 The sensor measures the attenuation of four beams of 563nm light. All beams are the same with the exception of path length.
 The measurement is performed by switching on LED's and measuring the strength of transmitted light with digital ambient light sensors.
-The sensor also measures water temperature, water level and barometric pressure to allow corrections due to environmental factors
+The sensor also measures water temperature, water pressure and barometric pressure to allow corrections due to environmental factors
 and an understanding of clarity /  water level hysteresis. 
 
 IMPORTANT NOTE! Any changes to this file should be recorded as a new version number IN THE FILE NAME and saved as a new sketch!
@@ -116,7 +116,7 @@ VEML3235 sensorRead = VEML3235();
 Generic_LM75 readTemp;  
 // MPRLS pressure sensor declaration "waterPressure"                            
 Adafruit_MPRLS waterPressure = Adafruit_MPRLS(); 
-// Barometric pressure sensor declaration     
+// Barometric pressure sensor declaration "baroPressure"    
 static ms5837 baroPressure; 
 // wd load driver instance of the radio and called it "rf95"
 RH_RF95 rf95(RFM95_CS, RFM95_INT);      
@@ -906,7 +906,7 @@ void calibration() {
       readA();    // call sensor measurement routine
       diff_A = AA;    // measurement that is called in previous line is used as the calibration value as a check of the calibrated PWM
       diff_a = aA;
-      half_A = (((aA*1000)/diff_A)*1000) / ((AA*1000)/diff_A);    // "half_X" is a comparison of the full and half strength measurements. Perfect result is 0.500 (integer 500)
+      half_A = (((aA*1000)/diff_A)*1000) / ((AA*1000)/diff_A);    // "half_X" is a comparison of the full and half strength measurements. Perfect result is 0.500
       // report path calibration summary to screen
       Serial.println(F("Path A calibrated"));
       Serial.print(F("12m clarity PWM full strength value = ")); Serial.print(bright_A); Serial.print(F(", ALS count = ")); Serial.println(AA);
@@ -1000,7 +1000,7 @@ void calibration() {
   Serial.print("\nStart temperature is: "); Serial.print(startTemp,1); Serial.println(" degrees Celsius");
   Serial.print("End temperature is: "); Serial.print(endTemp,1); Serial.println(" degrees Celsius"); delay(2000);
   Serial.println(F("\nRecalibrate if any calibration factor is more")); 
-  Serial.println(F("than 5 ALS counts from the desired 12m clarity value, or if "));
+  Serial.println(F("than 10 ALS counts (1%) from the desired 12m clarity ALS count, or if"));
   Serial.println(F("temperature has changed more than 1 degree during calibration"));
   Serial.println(F("-----------------------------------------------"));
   Serial.println();
